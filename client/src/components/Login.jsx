@@ -1,13 +1,15 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
+import { useDispatch } from "react-redux";
 
 import { useLoginUserMutation } from "../state/api/userApi";
+import { setCredentials } from "../state/slice/userSlice";
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [loginUser] = useLoginUserMutation();
-  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleChange = e => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -16,9 +18,9 @@ const Login = () => {
   const handleSubmit = async e => {
     e.preventDefault();
     try {
-      await loginUser(formData).unwrap();
+      const { data } = await loginUser(formData).unwrap();
+      dispatch(setCredentials(data));
       toast.success("Login successful");
-      navigate("/");
     } catch (error) {
       toast.error(error?.data?.message);
     }

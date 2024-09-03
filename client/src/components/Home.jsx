@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { useDispatch } from "react-redux";
 
 import {
   useDeleteUserMutation,
@@ -8,6 +8,8 @@ import {
   useUpdateUserMutation,
   useLogoutUserMutation,
 } from "../state/api/userApi";
+import { removeCredentials } from "../state/slice/userSlice";
+import LoadingSpinner from "./LoadingSpinner";
 
 const Home = () => {
   const { data: users, error, isLoading, refetch } = useGetUsersQuery();
@@ -15,7 +17,7 @@ const Home = () => {
   const [updateUser] = useUpdateUserMutation();
   const [deleteUser] = useDeleteUserMutation();
   const [logoutUser] = useLogoutUserMutation();
-  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleSelectUser = user => {
     setSelectedUser(user);
@@ -29,8 +31,9 @@ const Home = () => {
           name: selectedUser.name,
           phone: selectedUser.phone,
         }).unwrap();
-        refetch();
         setSelectedUser(null);
+        refetch();
+
         toast.success("User updated successfully");
       } catch (error) {
         toast.error(error?.data?.message);
@@ -41,6 +44,7 @@ const Home = () => {
   const handleDelete = async id => {
     try {
       await deleteUser(id).unwrap();
+      // dispatch(removeCredentials()); // Clear user credentials from Redux store
       toast.success("User deleted successfully");
     } catch (error) {
       toast.error(error?.data?.message);
@@ -50,14 +54,14 @@ const Home = () => {
   const handleLogout = async () => {
     try {
       await logoutUser().unwrap();
+      dispatch(removeCredentials()); // Clear user credentials from Redux store
       toast.success("Logged out successfully");
-      navigate("/");
     } catch (error) {
       toast.error(error?.data?.message);
     }
   };
 
-  if (isLoading) return <p>Loading...</p>;
+  if (isLoading) return <LoadingSpinner />;
   if (error) return <p>Error loading users!</p>;
 
   return (

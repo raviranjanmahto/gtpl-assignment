@@ -1,7 +1,10 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useRegisterUserMutation } from "../state/api/userApi";
+import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
+import { useDispatch } from "react-redux";
+
+import { useRegisterUserMutation } from "../state/api/userApi";
+import { setCredentials } from "../state/slice/userSlice";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -12,7 +15,7 @@ const Register = () => {
     profession: "",
   });
   const [registerUser] = useRegisterUserMutation();
-  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleChange = e => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -21,9 +24,9 @@ const Register = () => {
   const handleSubmit = async e => {
     e.preventDefault();
     try {
-      await registerUser(formData).unwrap();
+      const { data } = await registerUser(formData).unwrap();
+      dispatch(setCredentials(data));
       toast.success("User registered successfully");
-      navigate("/");
     } catch (error) {
       toast.error(error?.data?.message);
     }
