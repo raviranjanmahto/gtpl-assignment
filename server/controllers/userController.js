@@ -1,0 +1,68 @@
+const User = require("../models/userModel");
+const AppError = require("../utils/appError");
+const catchAsync = require("../utils/catchAsync");
+const sendCookieToken = require("../utils/cookieToken");
+const sendResponse = require("../utils/sendResponse");
+
+// Register user, password encryption done in middleware
+exports.registerUser = catchAsync(async (req, res, next) => {
+  const { name, email, password, phone, profession } = req.body;
+  if (!name || !email || !password || !phone || !profession)
+    return next(new AppError("All fields are required", 400));
+
+  // Create a new user instance
+  const user = new User({ name, email, password, phone, profession });
+
+  // Save the new user to the database
+  await user.save();
+
+  sendCookieToken(user, 201, res, "User created successfully");
+});
+
+// Login user
+exports.loginUser = catchAsync(async (req, res, next) => {
+  const { email, password } = req.body;
+  if (!email || !password)
+    return next(new AppError("Email and password are required", 400));
+
+  const user = await User.findOne({ email });
+  if (!user || !(await user.comparePassword(password)))
+    return next(new AppError("Invalid email or password", 401));
+
+  await user.save();
+
+  sendCookieToken(user, 200, res, "Logged in successfully");
+});
+
+// Get all users
+exports.getUsers = catchAsync(async (req, res) => {
+  const users = await User.find();
+  sendResponse(users, 200, res, "Users fetched successfully");
+});
+
+// Update user
+exports.updateUser = catchAsync(async (req, res, next) => {
+  const { name, phone } = req.body;
+  const user = await User.findByIdAndUpdate(
+    req.params.id,
+    { name, phone },
+    { new: true }
+  );
+  if (!user) return next(new AppError("User not found", 400));
+
+  sendResponse(user, 200, res, "User updated successfully");
+});
+
+// Delete user
+exports.deleteUser = catchAsync(async (req, res, next) => {
+  const user = await User.findByIdAndDelete(req.params.id);
+  if (!user) return next(new AppError("User not found", 400));
+
+  sendResponse(null, 200, res, "User deleted successfully");
+});
+
+// Logout user
+exports.logout = catchAsync((req, res) => {
+  res.clearCookie("token");
+  sendResponse(null, 200, res, "User logged out successfully");
+});
