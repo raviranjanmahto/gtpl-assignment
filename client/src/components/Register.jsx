@@ -14,7 +14,7 @@ const Register = () => {
     phone: "",
     profession: "",
   });
-  const [registerUser] = useRegisterUserMutation();
+  const [registerUser, { isLoading }] = useRegisterUserMutation();
   const dispatch = useDispatch();
 
   const handleChange = e => {
@@ -33,7 +33,7 @@ const Register = () => {
   };
 
   return (
-    <div className="d-flex justify-content-center align-items-center vh-100">
+    <div className="d-flex justify-content-center align-items-center vh-100 p-4">
       <div
         className="card p-4 shadow-lg"
         style={{ width: "100%", maxWidth: "600px" }}
@@ -95,7 +95,11 @@ const Register = () => {
               required
             />
           </div>
-          <button type="submit" className="btn btn-primary w-100">
+          <button
+            type="submit"
+            className="btn btn-primary w-100"
+            disabled={isLoading}
+          >
             Register
           </button>
         </form>

@@ -8,7 +8,7 @@ import { setCredentials } from "../state/slice/userSlice";
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
-  const [loginUser] = useLoginUserMutation();
+  const [loginUser, { isLoading }] = useLoginUserMutation();
   const dispatch = useDispatch();
 
   const handleChange = e => {
@@ -56,7 +56,11 @@ const Login = () => {
               required
             />
           </div>
-          <button type="submit" className="btn btn-primary w-100">
+          <button
+            type="submit"
+            className="btn btn-primary w-100"
+            disabled={isLoading}
+          >
             Login
           </button>
         </form>

@@ -14,9 +14,9 @@ import LoadingSpinner from "./LoadingSpinner";
 const Home = () => {
   const { data: users, error, isLoading, refetch } = useGetUsersQuery();
   const [selectedUser, setSelectedUser] = useState(null);
-  const [updateUser] = useUpdateUserMutation();
-  const [deleteUser] = useDeleteUserMutation();
-  const [logoutUser] = useLogoutUserMutation();
+  const [updateUser, { isLoading: updateLoading }] = useUpdateUserMutation();
+  const [deleteUser, { isLoading: deleteLoading }] = useDeleteUserMutation();
+  const [logoutUser, { isLoading: logoutLoading }] = useLogoutUserMutation();
   const dispatch = useDispatch();
 
   const handleSelectUser = user => {
@@ -33,7 +33,6 @@ const Home = () => {
         }).unwrap();
         setSelectedUser(null);
         refetch();
-
         toast.success("User updated successfully");
       } catch (error) {
         toast.error(error?.data?.message);
@@ -44,7 +43,7 @@ const Home = () => {
   const handleDelete = async id => {
     try {
       await deleteUser(id).unwrap();
-      // dispatch(removeCredentials()); // Clear user credentials from Redux store
+      refetch();
       toast.success("User deleted successfully");
     } catch (error) {
       toast.error(error?.data?.message);
@@ -62,7 +61,7 @@ const Home = () => {
   };
 
   if (isLoading) return <LoadingSpinner />;
-  if (error) return <p>Error loading users!</p>;
+  if (error) return <p>{error?.data?.message}</p>;
 
   return (
     <div className="container-fluid p-4">
@@ -71,12 +70,14 @@ const Home = () => {
         <button
           className="btn btn-danger btn-sm d-none d-lg-block"
           onClick={handleLogout}
+          disabled={logoutLoading}
         >
           Logout
         </button>
         <button
           className="btn btn-danger btn-sm d-lg-none"
           onClick={handleLogout}
+          disabled={logoutLoading}
         >
           Logout
         </button>
@@ -114,6 +115,7 @@ const Home = () => {
                     <button
                       className="btn btn-danger btn-sm"
                       onClick={() => handleDelete(user._id)}
+                      disabled={deleteLoading}
                     >
                       Delete
                     </button>
@@ -150,7 +152,11 @@ const Home = () => {
               }
             />
           </div>
-          <button className="btn btn-primary" onClick={handleUpdate}>
+          <button
+            className="btn btn-primary"
+            onClick={handleUpdate}
+            disabled={updateLoading}
+          >
             Update User
           </button>
         </div>
