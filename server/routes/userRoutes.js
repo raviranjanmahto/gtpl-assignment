@@ -10,6 +10,7 @@ router.post("/login", userController.loginUser);
 router.use(authController.protect);
 
 router.get("/", userController.getUsers);
+router.get("/current", userController.getCurrentUser);
 router.patch("/:id", userController.updateUser);
 router.delete("/:id", userController.deleteUser);
 router.post("/logout", userController.logout);

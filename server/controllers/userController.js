@@ -40,9 +40,18 @@ exports.getUsers = catchAsync(async (req, res) => {
   sendResponse(users, 200, res, "Users fetched successfully");
 });
 
+// Get current user
+exports.getCurrentUser = catchAsync(async (req, res) => {
+  sendResponse(req.user, 200, res, "User fetched successfully");
+});
+
 // Update user
 exports.updateUser = catchAsync(async (req, res, next) => {
   const { name, phone } = req.body;
+
+  if (!name || !phone)
+    return next(new AppError("Name and phone cannot be empty", 400));
+
   const user = await User.findByIdAndUpdate(
     req.params.id,
     { name, phone },
@@ -62,7 +71,12 @@ exports.deleteUser = catchAsync(async (req, res, next) => {
 });
 
 // Logout user
-exports.logout = catchAsync((req, res) => {
-  res.clearCookie("token");
-  sendResponse(null, 200, res, "User logged out successfully");
+exports.logout = catchAsync(async (req, res, next) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production", // Make sure this matches how the cookie was set
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // Match this with how the cookie was set
+  });
+
+  sendResponse(null, 200, res, "Logged out successfully");
 });

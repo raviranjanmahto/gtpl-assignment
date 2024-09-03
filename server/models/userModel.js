@@ -62,6 +62,7 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
 // Virtual to hide certain fields when converting to JSON
 userSchema.methods.toJSON = function () {
   const userObject = this.toObject();
+  delete userObject.password;
   delete userObject.__v;
   return userObject;
 };
